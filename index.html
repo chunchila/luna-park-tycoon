@@ -298,37 +298,52 @@ function renderRide(a){
   const card = document.getElementById("card-" + a.id);
   if(!card) return;
   card.classList.toggle("locked", !unlocked && !r.owned);
+  const hasMgr = !!S.managers[a.id];
+
+  // בונים מחדש את הכפתורים רק כשהמבנה משתנה - כדי לא לבלוע לחיצות באמצע טאץ'
+  const sig = (unlocked?1:0) + "|" + r.owned + "|" + (hasMgr?1:0);
+  if(card.dataset.sig !== sig){
+    card.dataset.sig = sig;
+    const box = document.getElementById("owned-" + a.id);
+    if(!unlocked && !r.owned){
+      box.innerHTML = '<div class="pending-label" style="margin-top:8px">🔒 ייפתח כשתתקרב לעלות: ' + fmt(a.baseCost) + ' 🪙</div>';
+    }else if(!r.owned){
+      box.innerHTML =
+        '<div class="btn-row"><button class="btn-buy" id="buy-' + a.id + '">בנה · ' + fmt(buyCost(a)) + ' 🪙</button></div>';
+      document.getElementById("buy-" + a.id).onclick = ()=>buy(a);
+    }else{
+      box.innerHTML =
+        '<div class="pending-bar"><div class="pending-fill" id="fill-' + a.id + '"></div></div>' +
+        '<div class="pending-label"><span>ממתין לאיסוף: <b id="pend-' + a.id + '"></b></span>' +
+        (hasMgr ? '<span class="mgr-on">🤖 מנהל אוסף אוטומטית</span>' : "") + '</div>' +
+        '<div class="btn-row">' +
+          '<button class="btn-collect' + (hasMgr ? " auto" : "") + '" id="col-' + a.id + '">' +
+            (hasMgr ? "🤖 איסוף אוטומטי" : "אסוף") + '</button>' +
+          '<button class="btn-upg" id="upg-' + a.id + '"></button>' +
+          '<button class="btn-mgr" id="mgr-' + a.id + '"></button>' +
+        '</div>';
+      document.getElementById("col-" + a.id).onclick = (e)=>collect(a, e);
+      document.getElementById("upg-" + a.id).onclick = ()=>upgrade(a);
+      if(!hasMgr) document.getElementById("mgr-" + a.id).onclick = ()=>hireMgr(a);
+    }
+  }
+
+  // עדכוני טקסט קלים בלבד
   document.getElementById("lvl-" + a.id).textContent = r.owned ? "רמה " + r.level : "";
   document.getElementById("sub-" + a.id).textContent = r.owned
     ? fmt(rideInc(a)) + " 🪙/שנייה · x" + r.owned
     : "מכניס " + fmt(a.baseInc * mult()) + " 🪙/שנייה";
-
-  const box = document.getElementById("owned-" + a.id);
-  if(!unlocked && !r.owned){
-    box.innerHTML = '<div class="pending-label" style="margin-top:8px">🔒 ייפתח כשתתקרב לעלות: ' + fmt(a.baseCost) + ' 🪙</div>';
-    return;
+  if(r.owned){
+    const upg = document.getElementById("upg-" + a.id);
+    if(upg) upg.textContent = "שדרג · " + fmt(upgCost(a)) + " 🪙";
+    const mgr = document.getElementById("mgr-" + a.id);
+    if(mgr) mgr.textContent = hasMgr ? "✓ מנהל" : "מנהל · " + fmt(mgrCost(a)) + " 🪙";
+    const col = document.getElementById("col-" + a.id);
+    if(col && !hasMgr) col.textContent = "אסוף · " + fmt(r.pending) + " 🪙";
+  }else if(unlocked){
+    const buy = document.getElementById("buy-" + a.id);
+    if(buy) buy.textContent = "בנה · " + fmt(buyCost(a)) + " 🪙";
   }
-  if(!r.owned){
-    box.innerHTML =
-      '<div class="btn-row"><button class="btn-buy" id="buy-' + a.id + '">בנה · ' + fmt(buyCost(a)) + ' 🪙</button></div>';
-    document.getElementById("buy-" + a.id).onclick = ()=>buy(a);
-    return;
-  }
-  const hasMgr = !!S.managers[a.id];
-  box.innerHTML =
-    '<div class="pending-bar"><div class="pending-fill" id="fill-' + a.id + '"></div></div>' +
-    '<div class="pending-label"><span>ממתין לאיסוף: <b id="pend-' + a.id + '"></b></span>' +
-    (hasMgr ? '<span class="mgr-on">🤖 מנהל אוסף אוטומטית</span>' : "") + '</div>' +
-    '<div class="btn-row">' +
-      '<button class="btn-collect' + (hasMgr ? " auto" : "") + '" id="col-' + a.id + '">' +
-        (hasMgr ? "🤖 איסוף אוטומטי" : "אסוף") + '</button>' +
-      '<button class="btn-upg" id="upg-' + a.id + '">שדרג · ' + fmt(upgCost(a)) + ' 🪙</button>' +
-      '<button class="btn-mgr" id="mgr-' + a.id + '">' +
-        (hasMgr ? "✓ מנהל" : "מנהל · " + fmt(mgrCost(a)) + " 🪙") + '</button>' +
-    '</div>';
-  document.getElementById("col-" + a.id).onclick = (e)=>collect(a, e);
-  document.getElementById("upg-" + a.id).onclick = ()=>upgrade(a);
-  if(!hasMgr) document.getElementById("mgr-" + a.id).onclick = ()=>hireMgr(a);
 }
 
 function renderAll(){
@@ -366,6 +381,10 @@ function hireMgr(a){
   if(S.coins < cost){ toast("חסרים לך " + fmt(cost - S.coins) + " 🪙"); return; }
   S.coins -= cost;
   S.managers[a.id] = true;
+  // המנהל אוסף מיד גם את מה שהצטבר
+  S.coins += rideState(a.id).pending;
+  S.totalEarned += rideState(a.id).pending;
+  rideState(a.id).pending = 0;
   toast("🤖 מנהל נשכר ל" + a.name + "!");
   renderAll(); save();
 }
