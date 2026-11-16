@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🎡 לונה פארק טייקון</title>
+<style>
+  :root{
+    --bg1:#1a0b2e; --bg2:#2d1b4e; --card:#ffffff14; --card-border:#ffffff22;
+    --gold:#ffd54f; --green:#69f0ae; --pink:#ff6ec7; --blue:#40c4ff;
+    --text:#f5f0ff; --muted:#b8a8d8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:linear-gradient(180deg,#0d0518 0%,var(--bg1) 40%,var(--bg2) 100%);
+    color:var(--text); min-height:100vh; direction:rtl;
+    padding-bottom:90px; overscroll-behavior-y:none;
+  }
+  header{
+    position:sticky; top:0; z-index:50;
+    background:linear-gradient(180deg,#1a0b2ef2,#1a0b2ed9);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--card-border);
+    padding:12px 16px 10px; text-align:center;
+  }
+  h1{font-size:20px; margin:0 0 6px; letter-spacing:.5px;}
+  .balance-row{display:flex; justify-content:center; align-items:baseline; gap:14px; flex-wrap:wrap;}
+  .coins{font-size:26px; font-weight:800; color:var(--gold); text-shadow:0 0 18px #ffd54f55;}
+  .persec{font-size:14px; color:var(--green); font-weight:600;}
+  .mult-badge{font-size:12px; background:#ffd54f22; border:1px solid #ffd54f55; color:var(--gold);
+    border-radius:999px; padding:2px 10px; font-weight:700;}
+  .save-note{font-size:11px; color:var(--muted); margin-top:4px; opacity:.85;}
+  main{max-width:560px; margin:0 auto; padding:14px 12px;}
+  .card{
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:18px; padding:14px; margin-bottom:14px;
+    box-shadow:0 6px 24px #00000044;
+    transition:transform .12s ease, opacity .2s;
+  }
+  .card.locked{opacity:.55; filter:grayscale(.5);}
+  .card-top{display:flex; align-items:center; gap:12px;}
+  .emoji{font-size:42px; line-height:1; filter:drop-shadow(0 3px 6px #0008);}
+  .card-title{flex:1; min-width:0;}
+  .card-title h2{font-size:17px; margin:0;}
+  .card-title .sub{font-size:12px; color:var(--muted); margin-top:2px;}
+  .lvl{font-size:12px; background:#ffffff1a; border-radius:8px; padding:3px 8px; font-weight:700; color:var(--blue); white-space:nowrap;}
+  .pending-bar{
+    margin:10px 0 4px; height:10px; background:#00000055; border-radius:999px; overflow:hidden;
+  }
+  .pending-fill{height:100%; width:0%; border-radius:999px;
+    background:linear-gradient(90deg,var(--pink),var(--gold)); transition:width .1s linear;}
+  .pending-label{font-size:12px; color:var(--muted); display:flex; justify-content:space-between;}
+  .pending-label b{color:var(--gold);}
+  .btn-row{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+  button{
+    font-family:inherit; border:none; cursor:pointer; border-radius:12px;
+    font-weight:700; transition:transform .08s, filter .15s; touch-action:manipulation;
+  }
+  button:active{transform:scale(.95);}
+  button:disabled{opacity:.4; cursor:not-allowed; filter:grayscale(.6);}
+  .btn-collect{
+    flex:1; min-width:110px; padding:12px; font-size:15px; color:#3a2500;
+    background:linear-gradient(180deg,#ffe082,#ffb300);
+    box-shadow:0 3px 0 #b97f00, 0 6px 14px #0006;
+  }
+  .btn-collect.auto{background:linear-gradient(180deg,#b9f6ca,#69f0ae); box-shadow:0 3px 0 #2e7d52, 0 6px 14px #0006; color:#06351d;}
+  .btn-buy{
+    flex:1; min-width:110px; padding:12px; font-size:15px; color:#06233a;
+    background:linear-gradient(180deg,#80d8ff,#40c4ff);
+    box-shadow:0 3px 0 #0277a8, 0 6px 14px #0006;
+  }
+  .btn-upg{
+    flex:1; min-width:100px; padding:10px; font-size:13px; color:#fff;
+    background:linear-gradient(180deg,#7c4dff,#5e35b1);
+    box-shadow:0 3px 0 #4527a0, 0 6px 14px #0006;
+  }
+  .btn-mgr{
+    flex:1; min-width:100px; padding:10px; font-size:13px; color:#fff;
+    background:linear-gradient(180deg,#f06292,#d81b60);
+    box-shadow:0 3px 0 #880e4f, 0 6px 14px #0006;
+  }
+  .mgr-on{font-size:12px; color:var(--green); font-weight:700; align-self:center;}
+  #prestige-box{
+    text-align:center; padding:18px 14px;
+    background:linear-gradient(135deg,#ffd54f18,#ff6ec718);
+    border:1px solid #ffd54f44;
+  }
+  #prestige-box h2{margin:0 0 6px; font-size:18px;}
+  #prestige-box p{font-size:13px; color:var(--muted); margin:0 0 12px;}
+  .btn-prestige{
+    padding:13px 26px; font-size:16px; color:#2a1400;
+    background:linear-gradient(180deg,#fff176,#ffd54f);
+    box-shadow:0 4px 0 #c89b00, 0 8px 20px #ffd54f33;
+  }
+  /* offline modal */
+  .overlay{
+    position:fixed; inset:0; z-index:100; display:none;
+    background:#0d0518cc; backdrop-filter:blur(6px);
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:linear-gradient(180deg,#2d1b4e,#1a0b2e);
+    border:1px solid #ffd54f66; border-radius:22px; padding:26px 22px;
+    max-width:340px; width:100%; text-align:center;
+    box-shadow:0 20px 60px #000a; animation:pop .35s cubic-bezier(.2,1.6,.4,1);
+  }
+  @keyframes pop{from{transform:scale(.7); opacity:0;}to{transform:scale(1); opacity:1;}}
+  .modal .big-emoji{font-size:52px;}
+  .modal h2{margin:10px 0 6px; font-size:19px;}
+  .modal .amt{font-size:28px; font-weight:800; color:var(--gold); margin:8px 0;}
+  .modal .time{font-size:13px; color:var(--muted); margin-bottom:16px;}
+  .btn-ok{
+    padding:12px 30px; font-size:16px; color:#3a2500;
+    background:linear-gradient(180deg,#ffe082,#ffb300); box-shadow:0 3px 0 #b97f00;
+  }
+  /* toast */
+  #toast{
+    position:fixed; bottom:18px; right:50%; transform:translateX(50%) translateY(80px);
+    background:#000000d9; border:1px solid var(--card-border); color:var(--text);
+    padding:10px 18px; border-radius:999px; font-size:14px; font-weight:600;
+    transition:transform .3s ease; z-index:90; white-space:nowrap;
+  }
+  #toast.show{transform:translateX(50%) translateY(0);}
+  .float-gain{
+    position:fixed; z-index:80; pointer-events:none; font-weight:800; color:var(--gold);
+    text-shadow:0 2px 6px #000; animation:floatUp 1s ease-out forwards; font-size:16px;
+  }
+  @keyframes floatUp{from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(-70px);}}
+  footer{text-align:center; color:var(--muted); font-size:11px; margin-top:8px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎡 לונה פארק טייקון</h1>
+  <div class="balance-row">
+    <div class="coins" id="coins">0 🪙</div>
+    <div class="persec" id="persec">+0 /שנייה</div>
+    <div class="mult-badge" id="mult">מכפיל ×1</div>
+  </div>
+  <div class="save-note" id="savenote">💾 נשמר אוטומטית</div>
+</header>
+<main id="park"></main>
+<div class="card" id="prestige-box" style="max-width:536px;margin:0 auto;">
+  <h2>✨ פרסטיז'</h2>
+  <p id="prestige-info">הגע ל־1,000,000 🪙 סה״כ הרווחים כדי לאפס את הפארק ולקבל מכפיל קבוע של ×1.5 על כל ההכנסות!</p>
+  <button class="btn-prestige" id="btn-prestige" disabled>בצע פרסטיז'</button>
+</div>
+<footer>נבנה באהבה · כל ההתקדמות נשמרת במכשיר שלך</footer>
+
+<div class="overlay" id="offline-overlay">
+  <div class="modal">
+    <div class="big-emoji">🌙</div>
+    <h2>בזמן שלא היית כאן...</h2>
+    <div class="time" id="offline-time"></div>
+    <div class="amt" id="offline-amt"></div>
+    <button class="btn-ok" id="offline-ok">אסוף! 🎉</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+const SAVE_KEY = "lunaParkTycoon_v1";
+const OFFLINE_CAP_H = 12;          // עד 12 שעות אופליין
+const OFFLINE_RATE  = 0.5;         // 50% יעילות אופליין
+const PRESTIGE_REQ  = 1000000;     // סה"כ הרווחים לפרסטיז' ראשון
+const PRESTIGE_MULT = 1.5;         // מכפיל קבוע לכל פרסטיז'
+const TICK_MS = 100;
+
+const ATTRACTIONS = [
+  {id:"carousel", name:"קרוסלה",          emoji:"🎠", baseCost:15,      baseInc:1,    costGrow:1.15},
+  {id:"coaster",  name:"רכבת הרים",        emoji:"🎢", baseCost:120,     baseInc:6,    costGrow:1.16},
+  {id:"wheel",    name:"גלגל ענק",         emoji:"🎡", baseCost:750,     baseInc:28,   costGrow:1.17},
+  {id:"haunted",  name:"רכבת תופת",        emoji:"👻", baseCost:4200,    baseInc:110,  costGrow:1.18},
+  {id:"bumper",   name:"מכוניות מתנגשות",  emoji:"🚗", baseCost:26000,   baseInc:480,  costGrow:1.19},
+  {id:"sling",    name:"מגה-סלינג",        emoji:"🚀", baseCost:160000,  baseInc:2200, costGrow:1.20},
+  {id:"vr",       name:"קולנוע VR",        emoji:"🥽", baseCost:1100000, baseInc:9500, costGrow:1.21},
+];
+
+const MGR_COST_MULT = 25;    // עלות מנהל = עלות בסיס × 25
+const UPG_BASE = 8;          // עלות שדרוג ראשון = עלות בסיס × 8
+const UPG_GROW = 2.1;
+
+let S = freshState();
+
+function freshState(){
+  return {
+    coins: 0,
+    totalEarned: 0,
+    prestige: 0,
+    rides: {},           // id -> {owned, level, pending}
+    managers: {},        // id -> true
+    lastSeen: Date.now(),
+  };
+}
+ATTRACTIONS.forEach(a => { /* rides filled lazily */ });
+
+function rideState(id){
+  if(!S.rides[id]) S.rides[id] = {owned:0, level:1, pending:0};
+  return S.rides[id];
+}
+function def(id){ return ATTRACTIONS.find(a=>a.id===id); }
+function mult(){ return Math.pow(PRESTIGE_MULT, S.prestige); }
+function rideInc(a){
+  const r = rideState(a.id);
+  if(!r.owned) return 0;
+  return a.baseInc * r.level * r.owned * mult();
+}
+function buyCost(a){
+  const r = rideState(a.id);
+  return Math.ceil(a.baseCost * Math.pow(a.costGrow, r.owned));
+}
+function upgCost(a){
+  const r = rideState(a.id);
+  return Math.ceil(a.baseCost * UPG_BASE * Math.pow(UPG_GROW, r.level - 1));
+}
+function mgrCost(a){ return Math.ceil(a.baseCost * MGR_COST_MULT); }
+function totalPerSec(){ return ATTRACTIONS.reduce((s,a)=>s+rideInc(a),0); }
+
+function fmt(n){
+  if(n < 1000) return Math.floor(n).toLocaleString("he-IL");
+  const units = [[1e12,"T"],[1e9,"B"],[1e6,"M"],[1e3,"K"]];
+  for(const [v,u] of units){
+    if(n >= v){
+      const x = n/v;
+      return (x >= 100 ? Math.floor(x) : x.toFixed(1).replace(/\.0$/,"")) + u;
+    }
+  }
+  return Math.floor(n).toString();
+}
+function fmtTime(ms){
+  const s = Math.floor(ms/1000);
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+  if(h>0) return h + " שעות ו-" + m + " דקות";
+  if(m>0) return m + " דקות";
+  return s + " שניות";
+}
+
+/* ---------- persistence ---------- */
+function save(){
+  S.lastSeen = Date.now();
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){}
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(raw){
+      const data = JSON.parse(raw);
+      S = Object.assign(freshState(), data);
+    }
+  }catch(e){}
+}
+
+/* ---------- offline earnings ---------- */
+function applyOffline(){
+  const now = Date.now();
+  const elapsed = Math.max(0, now - (S.lastSeen || now));
+  if(elapsed < 60000) return;          // פחות מדקה - לא מציגים
+  const capped = Math.min(elapsed, OFFLINE_CAP_H*3600*1000);
+  const gain = totalPerSec() * (capped/1000) * OFFLINE_RATE;
+  if(gain < 1) return;
+  S.coins += gain;
+  S.totalEarned += gain;
+  document.getElementById("offline-time").textContent = "הפארק עבד " + fmtTime(capped) + " בשבילך";
+  document.getElementById("offline-amt").textContent = "+" + fmt(gain) + " 🪙";
+  document.getElementById("offline-overlay").classList.add("show");
+}
+
+/* ---------- UI ---------- */
+const park = document.getElementById("park");
+function buildCards(){
+  park.innerHTML = "";
+  ATTRACTIONS.forEach(a=>{
+    const r = rideState(a.id);
+    const unlocked = r.owned > 0 || S.totalEarned >= a.baseCost * 0.5 || S.coins >= a.baseCost;
+    const card = document.createElement("div");
+    card.className = "card" + (unlocked ? "" : " locked");
+    card.id = "card-" + a.id;
+    card.innerHTML =
+      '<div class="card-top">' +
+        '<div class="emoji">' + a.emoji + '</div>' +
+        '<div class="card-title"><h2>' + a.name + '</h2>' +
+        '<div class="sub" id="sub-' + a.id + '"></div></div>' +
+        '<div class="lvl" id="lvl-' + a.id + '"></div>' +
+      '</div>' +
+      '<div id="owned-' + a.id + '"></div>';
+    park.appendChild(card);
+  });
+}
+
+function renderRide(a){
+  const r = rideState(a.id);
+  const unlocked = r.owned > 0 || S.totalEarned >= a.baseCost * 0.5 || S.coins >= a.baseCost;
+  const card = document.getElementById("card-" + a.id);
+  if(!card) return;
+  card.classList.toggle("locked", !unlocked && !r.owned);
+  document.getElementById("lvl-" + a.id).textContent = r.owned ? "רמה " + r.level : "";
+  document.getElementById("sub-" + a.id).textContent = r.owned
+    ? fmt(rideInc(a)) + " 🪙/שנייה · x" + r.owned
+    : "מכניס " + fmt(a.baseInc * mult()) + " 🪙/שנייה";
+
+  const box = document.getElementById("owned-" + a.id);
+  if(!unlocked && !r.owned){
+    box.innerHTML = '<div class="pending-label" style="margin-top:8px">🔒 ייפתח כשתתקרב לעלות: ' + fmt(a.baseCost) + ' 🪙</div>';
+    return;
+  }
+  if(!r.owned){
+    box.innerHTML =
+      '<div class="btn-row"><button class="btn-buy" id="buy-' + a.id + '">בנה · ' + fmt(buyCost(a)) + ' 🪙</button></div>';
+    document.getElementById("buy-" + a.id).onclick = ()=>buy(a);
+    return;
+  }
+  const hasMgr = !!S.managers[a.id];
+  box.innerHTML =
+    '<div class="pending-bar"><div class="pending-fill" id="fill-' + a.id + '"></div></div>' +
+    '<div class="pending-label"><span>ממתין לאיסוף: <b id="pend-' + a.id + '"></b></span>' +
+    (hasMgr ? '<span class="mgr-on">🤖 מנהל אוסף אוטומטית</span>' : "") + '</div>' +
+    '<div class="btn-row">' +
+      '<button class="btn-collect' + (hasMgr ? " auto" : "") + '" id="col-' + a.id + '">' +
+        (hasMgr ? "🤖 איסוף אוטומטי" : "אסוף") + '</button>' +
+      '<button class="btn-upg" id="upg-' + a.id + '">שדרג · ' + fmt(upgCost(a)) + ' 🪙</button>' +
+      '<button class="btn-mgr" id="mgr-' + a.id + '">' +
+        (hasMgr ? "✓ מנהל" : "מנהל · " + fmt(mgrCost(a)) + " 🪙") + '</button>' +
+    '</div>';
+  document.getElementById("col-" + a.id).onclick = (e)=>collect(a, e);
+  document.getElementById("upg-" + a.id).onclick = ()=>upgrade(a);
+  if(!hasMgr) document.getElementById("mgr-" + a.id).onclick = ()=>hireMgr(a);
+}
+
+function renderAll(){
+  document.getElementById("coins").textContent = fmt(S.coins) + " 🪙";
+  document.getElementById("persec").textContent = "+" + fmt(totalPerSec()) + " /שנייה";
+  document.getElementById("mult").textContent = "מכפיל ×" + mult().toFixed(1).replace(/\.0$/,"");
+  ATTRACTIONS.forEach(renderRide);
+  const can = S.totalEarned >= PRESTIGE_REQ * Math.pow(10, S.prestige);
+  const btn = document.getElementById("btn-prestige");
+  btn.disabled = !can;
+  document.getElementById("prestige-info").textContent = can
+    ? "מוכן! איפוס מלא תמורת מכפיל קבוע ×" + (mult()*PRESTIGE_MULT).toFixed(1).replace(/\.0$/,"") + " (כרגע ×" + mult().toFixed(1).replace(/\.0$/,"") + ")"
+    : "הגע ל־" + fmt(PRESTIGE_REQ * Math.pow(10, S.prestige)) + " 🪙 סה״כ הרווחים כדי לבצע פרסטיז' (מכפיל ×1.5 קבוע). כרגע: " + fmt(S.totalEarned) + " 🪙";
+}
+
+/* ---------- actions ---------- */
+function buy(a){
+  const cost = buyCost(a);
+  if(S.coins < cost){ toast("חסרים לך " + fmt(cost - S.coins) + " 🪙"); return; }
+  S.coins -= cost;
+  rideState(a.id).owned++;
+  toast(a.emoji + " " + a.name + " נבנה!");
+  renderAll(); save();
+}
+function upgrade(a){
+  const cost = upgCost(a);
+  if(S.coins < cost){ toast("חסרים לך " + fmt(cost - S.coins) + " 🪙"); return; }
+  S.coins -= cost;
+  rideState(a.id).level++;
+  toast("⬆️ " + a.name + " שודרג לרמה " + rideState(a.id).level);
+  renderAll(); save();
+}
+function hireMgr(a){
+  const cost = mgrCost(a);
+  if(S.coins < cost){ toast("חסרים לך " + fmt(cost - S.coins) + " 🪙"); return; }
+  S.coins -= cost;
+  S.managers[a.id] = true;
+  toast("🤖 מנהל נשכר ל" + a.name + "!");
+  renderAll(); save();
+}
+function collect(a, ev){
+  const r = rideState(a.id);
+  if(S.managers[a.id]) return;
+  const amt = r.pending;
+  if(amt < 1) return;
+  r.pending = 0;
+  S.coins += amt;
+  S.totalEarned += amt;
+  floatGain(ev, "+" + fmt(amt));
+  renderAll();
+}
+document.getElementById("btn-prestige").onclick = ()=>{
+  const req = PRESTIGE_REQ * Math.pow(10, S.prestige);
+  if(S.totalEarned < req) return;
+  if(!confirm("פרסטיז' מאפס את הפארק (מתקנים, שדרוגים, מנהלים ומטבעות) ומעניק מכפיל קבוע ×1.5. להמשיך?")) return;
+  const p = S.prestige + 1;
+  S = freshState();
+  S.prestige = p;
+  save();
+  buildCards(); renderAll();
+  toast("✨ פרסטיז'! המכפיל עכשיו ×" + mult().toFixed(1));
+};
+document.getElementById("offline-ok").onclick = ()=>{
+  document.getElementById("offline-overlay").classList.remove("show");
+  renderAll();
+};
+
+/* ---------- helpers ---------- */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+function floatGain(ev, text){
+  if(!ev) return;
+  const el = document.createElement("div");
+  el.className = "float-gain";
+  el.textContent = text + " 🪙";
+  const x = (ev.clientX || innerWidth/2), y = (ev.clientY || innerHeight/2);
+  el.style.left = x + "px"; el.style.top = y + "px";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1000);
+}
+
+/* ---------- game loop ---------- */
+function tick(){
+  const dt = TICK_MS/1000;
+  ATTRACTIONS.forEach(a=>{
+    const r = rideState(a.id);
+    if(!r.owned) return;
+    const inc = rideInc(a) * dt;
+    if(S.managers[a.id]){
+      S.coins += inc;
+      S.totalEarned += inc;
+    }else{
+      r.pending += inc;
+    }
+  });
+  // עדכון קל בלבד בלי רינדור מלא
+  document.getElementById("coins").textContent = fmt(S.coins) + " 🪙";
+  document.getElementById("persec").textContent = "+" + fmt(totalPerSec()) + " /שנייה";
+  ATTRACTIONS.forEach(a=>{
+    const r = rideState(a.id);
+    if(!r.owned || S.managers[a.id]) return;
+    const pend = document.getElementById("pend-" + a.id);
+    const fill = document.getElementById("fill-" + a.id);
+    if(pend) pend.textContent = fmt(r.pending) + " 🪙";
+    if(fill){
+      const cap = Math.max(rideInc(a)*10, 1);
+      fill.style.width = Math.min(100, (r.pending/cap)*100) + "%";
+    }
+  });
+}
+setInterval(tick, TICK_MS);
+setInterval(renderAll, 2000);          // רענון כפתורים/מחירים
+setInterval(save, 5000);
+window.addEventListener("beforeunload", save);
+document.addEventListener("visibilitychange", ()=>{ if(document.hidden) save(); });
+
+/* ---------- init ---------- */
+load();
+buildCards();
+applyOffline();
+renderAll();
+save();
+</script>
+</body>
+</html>
