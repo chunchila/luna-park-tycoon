@@ -4,7 +4,7 @@
 
 ## ▶️ שחקו עכשיו
 
-**[https://dino-games-q3hiaedc2-romans-projects-97b8739c.vercel.app](https://dino-games-q3hiaedc2-romans-projects-97b8739c.vercel.app)**
+**[https://dino-games-qlz6gaur3-romans-projects-97b8739c.vercel.app](https://dino-games-qlz6gaur3-romans-projects-97b8739c.vercel.app)**
 
 ## איך משחקים?
 
